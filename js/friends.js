@@ -40,22 +40,25 @@ function loadFriendsList() {
         });
 }
 
-// Add Friend Logic
+// Add Friend Logic (By Username)
 document.getElementById('confirmAddFriend').addEventListener('click', async () => {
-    const email = document.getElementById('newFriendEmail').value.trim();
-    if (!email) return;
+    let username = document.getElementById('newFriendEmail').value.trim(); // Reusing ID for simplicity but logically it's username
+    if (!username) return;
 
-    if (email === appState.currentUser.email) {
+    // Remove @ if present
+    if (username.startsWith('@')) username = username.substring(1);
+
+    if (appState.currentUserData && username === appState.currentUserData.username) {
         alert("You cannot add yourself!");
         return;
     }
 
-    // 1. Find user by email
+    // 1. Find user by username
     const usersRef = db.collection('users');
-    const snapshot = await usersRef.where('email', '==', email).get();
+    const snapshot = await usersRef.where('username', '==', username).get();
 
     if (snapshot.empty) {
-        alert("User not found!");
+        alert("User @" + username + " not found!");
         return;
     }
 
@@ -65,12 +68,14 @@ document.getElementById('confirmAddFriend').addEventListener('click', async () =
     // 2. Add to my friends collection
     await db.collection('users').doc(appState.currentUser.uid).collection('friends').doc(friendData.uid).set({
         uid: friendData.uid,
+        username: friendData.username, // Store username
         email: friendData.email
     });
 
-    // 3. Add me to their friends collection (Auto-friend for simplicity in v1)
+    // 3. Add me to their friends
     await db.collection('users').doc(friendData.uid).collection('friends').doc(appState.currentUser.uid).set({
         uid: appState.currentUser.uid,
+        username: appState.currentUserData.username,
         email: appState.currentUser.email
     });
 

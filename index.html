@@ -37,14 +37,20 @@
         <!-- Header -->
         <header class="app-header">
             <div class="logo">
-                <i class="fa-solid fa-dove"></i> <span>FlyerChat</span>
+                <!-- Using an emoji as a reliable fallback or the image if preferred. User wants explicit butterfly. -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Blue_Morpho_butterfly_300x271.png/600px-Blue_Morpho_butterfly_300x271.png"
+                    style="width: 30px; height: 30px; display:inline-block; vertical-align:middle; filter:hue-rotate(280deg);">
+                <span>FlyerChat</span>
             </div>
             <div class="user-controls hidden" id="userControls">
                 <button id="pwaInstallBtn" class="icon-btn hidden" title="Install App"><i
                         class="fa-solid fa-download"></i></button>
-                <span id="currentUserDisplay"></span>
-                <button id="logoutBtn" class="icon-btn" title="Logout"><i
-                        class="fa-solid fa-right-from-bracket"></i></button>
+                <div class="user-status-pill" id="myProfileBtn" title="My Profile">
+                    <div class="avatar-small" id="headerAvatar"></div>
+                    <span id="currentUserDisplay"></span>
+                </div>
+                <!-- Settings Menu Toggle -->
+                <button id="settingsBtn" class="icon-btn"><i class="fa-solid fa-bars"></i></button>
             </div>
         </header>
 
@@ -52,7 +58,8 @@
         <section id="loginView" class="view active-view">
             <div class="login-card">
                 <h2>Welcome to FlyerChat</h2>
-                <p>Connect with your close friends in a beautiful space.</p>
+                <div class="butterfly-icon-large">🦋</div>
+                <p>The world's most elegant messaging app.</p>
                 <div class="input-group">
                     <input type="email" id="emailInput" placeholder="Email Address">
                 </div>
@@ -62,6 +69,39 @@
                 <button id="loginBtn" class="primary-btn">Login</button>
                 <button id="registerBtn" class="secondary-btn">Create Account</button>
                 <div id="authError" class="error-msg"></div>
+            </div>
+        </section>
+
+        <!-- View: Profile Setup (New) -->
+        <section id="profileSetupView" class="view">
+            <h2>Create Your Identity</h2>
+            <p>Choose a unique username.</p>
+            <div class="profile-avatar-upload">
+                <div class="avatar-large" id="setupAvatarPreview"><i class="fa-solid fa-camera"></i></div>
+            </div>
+            <input type="text" id="setupUsername" placeholder="@username">
+            <input type="text" id="setupBio" placeholder="Bio (Optional)">
+            <button id="completeSetupBtn" class="primary-btn">Get Started</button>
+        </section>
+
+        <!-- View: Profile My Settings -->
+        <section id="settingsView" class="view">
+            <div class="settings-header">
+                <button id="backFromSettings" class="icon-btn"><i class="fa-solid fa-arrow-left"></i></button>
+                <h3>Settings</h3>
+            </div>
+            <div class="settings-content">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="editUsername">
+                </div>
+                <div class="input-group">
+                    <label>Bio</label>
+                    <input type="text" id="editBio">
+                </div>
+                <button id="saveProfileBtn" class="primary-btn">Save Changes</button>
+                <hr class="divider">
+                <button id="logoutBtnSettings" class="call-end-btn" style="width:100%">Logout</button>
             </div>
         </section>
 
@@ -89,24 +129,61 @@
         <section id="chatView" class="view">
             <div class="chat-header">
                 <button id="backToFriends" class="icon-btn"><i class="fa-solid fa-arrow-left"></i></button>
-                <div class="chat-user-info">
+
+                <div class="chat-user-info" id="chatHeaderInfo">
                     <div class="avatar" id="chatAvatar"><i class="fa-solid fa-user"></i></div>
-                    <span id="chatUserName">Friend Name</span>
+                    <div class="header-text-col">
+                        <span id="chatUserName">Friend Name</span>
+                        <span id="chatUserStatus" class="status-subtitle">Offline</span>
+                    </div>
                 </div>
+
                 <div class="chat-actions">
                     <button id="voiceCallBtn" class="icon-btn call-btn"><i class="fa-solid fa-phone"></i></button>
                     <button id="videoCallBtn" class="icon-btn call-btn"><i class="fa-solid fa-video"></i></button>
+                    <button id="chatOptionsBtn" class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                 </div>
+            </div>
+
+            <!-- Chat Options Dropdown -->
+            <div id="chatOptionsDropdown" class="dropdown-menu hidden">
+                <button id="clearChatBtn" class="dropdown-item"><i class="fa-solid fa-trash"></i> Clear History</button>
+                <button id="blockUserBtn" class="dropdown-item text-danger"><i class="fa-solid fa-ban"></i> Block
+                    User</button>
             </div>
 
             <div class="chat-messages" id="messagesContainer">
                 <!-- Messages go here -->
             </div>
 
-            <div class="chat-input-area">
-                <input type="text" id="messageInput" placeholder="Type a message...">
-                <button id="sendMessageBtn" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="typing-indicator hidden">
+                <span></span><span></span><span></span>
             </div>
+
+            <!-- Reply Preview -->
+            <div id="replyPreview" class="reply-preview hidden">
+                <div class="reply-content">
+                    <span class="reply-title">Replying to...</span>
+                    <span id="replyTextDisplay" class="reply-text">Message text</span>
+                </div>
+                <button id="cancelReplyBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="chat-input-area">
+                <button id="attachBtn" class="icon-btn"><i class="fa-solid fa-paperclip"></i></button>
+
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Message..." autocomplete="off">
+                </div>
+
+                <button id="recordBtn" class="icon-btn" title="Hold to Record"><i
+                        class="fa-solid fa-microphone"></i></button>
+                <button id="sendMessageBtn" class="send-btn hidden"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+
+            <!-- Hidden File Input -->
+            <input type="file" id="fileInput" hidden multiple accept="image/*,video/*,audio/*,.pdf,.doc">
         </section>
 
         <!-- Incoming Call Modal -->

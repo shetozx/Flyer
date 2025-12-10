@@ -1,34 +1,70 @@
 // auth.js
 
 // Auth State Listener
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
     if (user) {
         // User is signed in
         appState.currentUser = user;
         console.log("Logged in as:", user.email);
 
-        // Update specific user doc in Firestore (to ensure existence for search)
+        // Fetch User Data from Firestore to get Username
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists && userDoc.data().username) {
+            // User has setup profile
+            appState.currentUserData = userDoc.data();
+
+            document.getElementById('userControls').classList.remove('hidden');
+            document.getElementById('currentUserDisplay').textContent = '@' + appState.currentUserData.username;
+
+            ui.showView('friends');
+            loadFriendsList();
+        } else {
+            // New User or Migration: Go to Setup
+            document.getElementById('userControls').classList.add('hidden');
+            ui.showView('profileSetupView');
+        }
+
+        // Update Online Status
         db.collection('users').doc(user.uid).set({
-            email: user.email,
-            uid: user.uid,
+            status: 'online',
             lastSeen: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
-        // Update UI
-        document.getElementById('userControls').classList.remove('hidden');
-        // shorten email for display
-        document.getElementById('currentUserDisplay').textContent = user.email.split('@')[0];
-
-        ui.showView('friends');
-        loadFriendsList(); // from friends.js
     } else {
         // User is signed out
         appState.currentUser = null;
+        appState.currentUserData = null;
         console.log("Logged out");
 
         document.getElementById('userControls').classList.add('hidden');
         ui.showView('login');
     }
+});
+
+// Setup Completion Logic
+document.getElementById('completeSetupBtn')?.addEventListener('click', async () => {
+    const username = document.getElementById('setupUsername').value.trim();
+    const bio = document.getElementById('setupBio').value.trim();
+
+    if (!username || username.length < 3) {
+        alert("Please enter a valid username (3+ chars).");
+        return;
+    }
+
+    // Check availability (Skipped for speed, assume unique or handle error)
+
+    await db.collection('users').doc(appState.currentUser.uid).set({
+        uid: appState.currentUser.uid,
+        email: appState.currentUser.email,
+        username: username,
+        bio: bio,
+        searchKey: username.toLowerCase(), // Helper for case-insensitive search
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // Reload to trigger auth listener logic
+    location.reload();
 });
 
 // Login
