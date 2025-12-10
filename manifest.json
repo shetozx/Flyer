@@ -1,0 +1,21 @@
+{
+    "name": "FlyerChat",
+    "short_name": "FlyerChat",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#0f0c29",
+    "theme_color": "#0f0c29",
+    "description": "Connect freely with friends. Video & Voice Chat.",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/2913/2913520.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/2913/2913520.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
